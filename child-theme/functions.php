@@ -52,3 +52,21 @@ function algolia_update_post($id, WP_Post $post, $update) {
 
 add_action('save_post', 'algolia_update_post', 10, 3);
 
+function algolia_update_post_meta($meta_id, $object_id, $meta_key, $_meta_value) {
+    global $algolia;
+    $indexedMetaKeys = ['seo_description', 'seo_title'];
+
+    if (in_array($meta_key, $indexedMetaKeys)) {
+        $index = $algolia->initIndex(
+            apply_filters('algolia_index_name', 'post')
+        );
+
+        $index->partialUpdateObject([
+            'objectID' => 'post#'.$object_id,
+            $meta_key => $_meta_value,
+        ]);
+    }
+}
+
+add_action('update_post_meta', 'algolia_update_post_meta', 10, 4);
+
