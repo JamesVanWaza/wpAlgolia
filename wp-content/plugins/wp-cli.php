@@ -89,6 +89,46 @@ class Algolia_Command {
         }
     }
     
+    public function set_config($args, $assoc_args) {
+        global $algolia;
+    
+        $canonicalIndexName = $assoc_args['index'];
+        if (!$canonicalIndexName) {
+            throw new InvalidArgumentException('--index argument is required');
+        }
+    
+        $index = $algolia->initIndex(
+            apply_filters('algolia_index_name', $canonicalIndexName)
+        );
+    
+        if ($assoc_args['settings']) {
+            $settings = (array) apply_filters('get_'.$canonicalIndexName.'_settings', []);
+            if ($settings) {
+                $index->setSettings($settings);
+                WP_CLI::success('Push settings to '.$index->getIndexName());
+            }
+    
+        }
+    
+        if ($assoc_args['synonyms']) {
+            $synonyms = (array) apply_filters('get_'.$canonicalIndexName.'_synonyms', []);
+            if ($synonyms) {
+                $index->replaceAllSynonyms($synonyms);
+                WP_CLI::success('Push synonyms to '.$index->getIndexName());
+            }
+    
+        }
+    
+        if ($assoc_args['rules']) {
+            $rules = (array) apply_filters('get_'.$canonicalIndexName.'$rules', []);
+            if ($rules) {
+                $index->replaceAllRules($rules);
+                WP_CLI::success('Push rules to '.$index->getIndexName());
+            }
+    
+        }
+    }
+    
 }
   
 
