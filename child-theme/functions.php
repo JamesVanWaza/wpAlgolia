@@ -81,9 +81,20 @@ function algolia_get_post_settings($defaultSettings) {
     return [
         'hitsPerPage' => 18,
         'searchableAttributes' => ['title', 'content', 'author.name'],
+        'replicas' => [
+            'post_replica'
+        ],
     ];
 }
 add_filter('get_post_settings', 'algolia_get_post_settings');
+
+function algolia_get_post_replica_settings($defaultSettings) {
+    return [
+        'hitsPerPage' => 100,
+    ];
+}
+add_filter('get_post_replica_settings', 'algolia_get_post_replica_settings');
+
 
 function algolia_get_post_synonyms($defaultSynonyms) {
     return json_decode(
