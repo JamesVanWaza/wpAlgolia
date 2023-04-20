@@ -5,6 +5,7 @@ function algolia_post_index_name($defaultName) {
 
     return $table_prefix.$defaultName;
 }
+
 add_filter('algolia_index_name', 'algolia_post_index_name');
 
 function algolia_post_to_record(WP_Post $post) {
@@ -26,6 +27,7 @@ function algolia_post_to_record(WP_Post $post) {
         'custom_field' => get_post_meta($post->id, 'custom_field_name'),
     ];
 }
+
 add_filter('post_to_record', 'algolia_post_to_record');
 
 function algolia_update_post($id, WP_Post $post, $update) {
