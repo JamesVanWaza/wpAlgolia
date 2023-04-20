@@ -97,37 +97,55 @@ class Algolia_Command {
             throw new InvalidArgumentException('--index argument is required');
         }
     
+        $forward = isset($assoc_args['forward-to-replicas']) ? $assoc_args['forward-to-replicas'] : false;
+    
         $index = $algolia->initIndex(
             apply_filters('algolia_index_name', $canonicalIndexName)
         );
     
+        $replicas = [];
+    
         if ($assoc_args['settings']) {
             $settings = (array) apply_filters('get_'.$canonicalIndexName.'_settings', []);
-            if ($settings) {
-                $index->setSettings($settings);
-                WP_CLI::success('Push settings to '.$index->getIndexName());
+    
+            if (isset($settings['replicas'])) {
+                $replicas = $settings['replicas'];
+    
+                $settings['replicas'] = array_map(function ($replicaName) {
+                    return apply_filters('algolia_index_name', $replicaName);
+                }, $settings['replicas']);
             }
     
+            if ($settings) {
+                $index->setSettings($settings, ['forwardToReplicas' => $forward]);
+            }
+    
+            WP_CLI::success('Push settings to '.$index->getIndexName());
         }
     
         if ($assoc_args['synonyms']) {
             $synonyms = (array) apply_filters('get_'.$canonicalIndexName.'_synonyms', []);
             if ($synonyms) {
-                $index->replaceAllSynonyms($synonyms);
-                WP_CLI::success('Push synonyms to '.$index->getIndexName());
+                $index->replaceAllSynonyms($synonyms, ['forwardToReplicas' => $forward]);
             }
     
+            WP_CLI::success('Push synonyms to '.$index->getIndexName());
         }
     
         if ($assoc_args['rules']) {
             $rules = (array) apply_filters('get_'.$canonicalIndexName.'$rules', []);
             if ($rules) {
-                $index->replaceAllRules($rules);
-                WP_CLI::success('Push rules to '.$index->getIndexName());
+                $index->replaceAllRules($rules, ['forwardToReplicas' => $forward]);
             }
     
+            WP_CLI::success('Push rules to '.$index->getIndexName());
+        }
+    
+        foreach ($replicas as $replicaName) {
+            $this->set_config([], ['index' => $replicaName] + $assoc_args);
         }
     }
+    
     
 }
   
