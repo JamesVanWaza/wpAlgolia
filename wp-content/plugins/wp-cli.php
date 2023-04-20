@@ -12,7 +12,7 @@ class Algolia_Command {
         $type = isset($assoc_args['type']) ? $assoc_args['type'] : 'post';
     
         $indexName = $table_prefix.$type;
-        
+
         $index = $algolia->initIndex(
             apply_filters('algolia_index_name', $indexName, $type)
         );
@@ -57,7 +57,38 @@ class Algolia_Command {
         } while (true);
     
         WP_CLI::success("$count $type entries indexed in Algolia");
-    }    
+    }  
+    
+    public function copy_config($args, $assoc_args) {
+        global $algolia;
+    
+        $srcIndexName = $assoc_args['from'];
+        $destIndexName = $assoc_args['to'];
+    
+        if (!$srcIndexName || !$destIndexName) {
+            throw new InvalidArgumentException('--from and --to arguments are required');
+        }
+    
+        $scope = [];
+    
+        if (isset($assoc_args['settings']) && $assoc_args['settings']) {
+            $scope[] = 'settings';
+        }
+        if (isset($assoc_args['synonyms']) && $assoc_args['synonyms']) {
+            $scope[] = 'synonyms';
+        }
+        if (isset($assoc_args['rules']) && $assoc_args['rules']) {
+            $scope[] = 'rules';
+        }
+    
+        if (!empty($scope)) {
+            $algolia->copyIndex($srcIndexName, $destIndexName, ['scope' => $scope]);
+            WP_CLI::success('Copied '.implode(', ', $scope)." from $srcIndexName to $destIndexName");
+        } else {
+            WP_CLI::warning('Nothing to copy, use --settings, --synonyms or --rules.');
+        }
+    }
+    
 }
   
 
