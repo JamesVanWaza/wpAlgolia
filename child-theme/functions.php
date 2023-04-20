@@ -28,3 +28,27 @@ function algolia_post_to_record(WP_Post $post) {
 }
 add_filter('post_to_record', 'algolia_post_to_record');
 
+function algolia_update_post($id, WP_Post $post, $update) {
+    if (wp_is_post_revision($id) || wp_is_post_autosave($id)) {
+        return $post;
+    }
+
+    global $algolia;
+
+    $record = (array) apply_filters($post->post_type.'_to_record', $post);
+
+    if (!isset($record['objectID'])) {
+      $record['objectID'] = implode('#', [$post->post_type, $post->ID]);
+    }
+
+    $index = $algolia->initIndex(
+        apply_filters('algolia_index_name', $post->post_type)
+    );
+
+    $index->saveObject($record);
+
+    return $post;
+}
+
+add_action('save_post', 'algolia_update_post', 10, 3);
+
