@@ -21,8 +21,9 @@ class Algolia_Command {
             $posts = new WP_Query([
                 'posts_per_page' => 100,
                 'paged' => $paged,
-                'post_type' => 'post'
-            ]);
+                'post_type' => 'post',
+                'post_status' => 'publish',
+            ]);        
   
             if (!$posts->have_posts()) {
                 break;
