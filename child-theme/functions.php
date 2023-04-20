@@ -77,3 +77,20 @@ function algolia_update_post_meta($meta_id, $object_id, $meta_key, $_meta_value)
 
 add_action('update_post_meta', 'algolia_update_post_meta', 10, 4);
 
+function algolia_get_post_settings($defaultSettings) {
+    return [
+        'hitsPerPage' => 18,
+        'searchableAttributes' => ['title', 'content', 'author.name'],
+    ];
+}
+add_filter('get_post_settings', 'algolia_get_post_settings');
+
+function algolia_get_post_synonyms($defaultSynonyms) {
+    return json_decode(
+        file_get_contents(get_template_directory() . '/my-synonyms.json'),
+        true
+    );
+}
+add_filter('get_post_synonyms', 'algolia_get_post_synonyms');
+
+
